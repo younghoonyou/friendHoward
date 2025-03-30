@@ -45,7 +45,7 @@ const FlagTransition: React.FC<FlagProps> = ({ scrollY }) => {
     <FlagContainer>
       {/* Canadian Flag */}
       <Flag 
-        background="/canada-flag.png"
+        background="canada-flag.png"
         animate={{ 
           rotateY: rotateY,
           opacity: 1 - progress
@@ -55,7 +55,7 @@ const FlagTransition: React.FC<FlagProps> = ({ scrollY }) => {
       
       {/* Taiwan Flag */}
       <Flag 
-        background="/taiwan-flag.png"
+        background="taiwan-flag.png"
         initial={{ rotateY: -180 }}
         animate={{ 
           rotateY: -180 + rotateY,

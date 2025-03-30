@@ -26,8 +26,8 @@ const Earth: React.FC<{ scrollY: number }> = ({ scrollY }) => {
   const [EarthRadius, setEarthRadius] = useState(1);
 
   // Load textures
-  const earthTexture = useTexture('/earth-texture.jpg');
-  const planeTexture = useTexture('/airplane.png');
+  const earthTexture = useTexture('earth-texture.jpg');
+  const planeTexture = useTexture('airplane.png');
 
   // Pulsing light effect
   useEffect(() => {
