@@ -55,36 +55,9 @@ const ScrollNavLink = styled(ScrollLink)`
 const Header: React.FC = () => {
   return (
     <HeaderContainer>
-      <Logo>Friend Howard</Logo>
+      <Logo>好朋友</Logo>
       <Nav>
-        {/* <ScrollNavLink 
-          to="home" 
-          smooth={true} 
-          duration={500} 
-          offset={-80}
-        >
-          Home
-        </ScrollNavLink> */}
         <NavLink to="/">Home</NavLink>
-        
-        {/* <ScrollNavLink 
-          to="about" 
-          smooth={true} 
-          duration={500} 
-          offset={-80}
-        >
-          About
-        </ScrollNavLink> */}
-        
-        {/* <ScrollNavLink 
-          to="journey" 
-          smooth={true} 
-          duration={500} 
-          offset={-80}
-        >
-          Memories
-        </ScrollNavLink> */}
-        
         <ScrollNavLink 
           to="photos" 
           smooth={true} 
@@ -92,17 +65,7 @@ const Header: React.FC = () => {
           offset={-80}
         >
           Memories
-        </ScrollNavLink>
-        
-        {/* <ScrollNavLink 
-          to="messages" 
-          smooth={true} 
-          duration={500} 
-          offset={-80}
-        >
-          Messages
-        </ScrollNavLink> */}
-        
+        </ScrollNavLink>        
         <NavLink to="/upload">Upload</NavLink>
       </Nav>
     </HeaderContainer>

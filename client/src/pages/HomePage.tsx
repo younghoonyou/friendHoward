@@ -3,7 +3,6 @@ import styled from 'styled-components';
 import { motion } from 'framer-motion';
 import EarthScene from '../components/EarthScene';
 import FlagTransition from '../components/FlagTransition';
-import MessageWall from '../components/MessageWall';
 import PhotoGallery from '../components/PhotoGallery';
 import { Element } from 'react-scroll';
 
@@ -64,7 +63,8 @@ const Subtitle = styled(motion.h2)`
 `;
 
 const ContentContainer = styled.div`
-  max-width: 800px;
+  // max-width: 800px;
+  width: 100%;
   margin: 0 auto;
 `;
 
@@ -113,7 +113,7 @@ const HomePage: React.FC = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
           >
-            Friend Howard
+            Howard
           </Title>
           <Subtitle
             initial={{ opacity: 0, y: 30 }}
@@ -125,7 +125,7 @@ const HomePage: React.FC = () => {
         </ContentContainer>
       </HeroSection>
   
-      <PhotosSection name="photos">
+      <PhotosSection name="photos" id='photos'>
         <ContentContainer>
           <motion.h2
             initial={{ opacity: 0, y: 20 }}
@@ -139,21 +139,6 @@ const HomePage: React.FC = () => {
           <PhotoGallery />
         </ContentContainer>
       </PhotosSection>
-
-      {/* <MessagesSection name="messages">
-        <ContentContainer>
-          <motion.h2
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            viewport={{ once: true }}
-            style={{ fontSize: '2.5rem', marginBottom: '2rem', textAlign: 'center' }}
-          >
-            Farewell Messages
-          </motion.h2>
-          <MessageWall />
-        </ContentContainer>
-      </MessagesSection> */}
     </HomeContainer>
   );
 };

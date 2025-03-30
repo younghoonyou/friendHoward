@@ -13,7 +13,7 @@ const Footer: React.FC = () => {
 
   return (
     <FooterContainer>
-      <p>Farewell Howard &copy; {year} - From Canada to Taiwan</p>
+      <p>Farewell Howard &copy; {year} - By Hoon</p>
     </FooterContainer>
   );
 };

@@ -1,7 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
 import { motion } from 'framer-motion';
-import MessageForm from '../components/MessageForm';
 import PhotoUploadForm from '../components/PhotoUploadForm';
 
 const PageContainer = styled.div`
@@ -47,14 +46,6 @@ const UploadPage: React.FC = () => {
       </PageTitle>
       
       <FormsContainer>
-        {/* <FormSection
-          initial={{ opacity: 0, x: -30 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-        >
-          <MessageForm />
-        </FormSection> */}
-        
         <FormSection
           initial={{ opacity: 0, x: 30 }}
           animate={{ opacity: 1, x: 0 }}

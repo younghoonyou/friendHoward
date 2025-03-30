@@ -3,8 +3,8 @@ import { useFrame } from '@react-three/fiber';
 import { useTexture, Html, Billboard } from '@react-three/drei';
 import * as THREE from 'three';
 
-// Vancouver coordinates: [49.2827, -123.1207]
-// Taipei coordinates: [25.0330, 121.5654]
+// Vancouver location: [49.2827, -123.1207]
+// Taiwan location: [25.0330, 121.5654]
 const startCoordinates = [49.2827, -123.1207];
 const endCoordinates = [25.0330, 121.5654];
 
@@ -23,6 +23,7 @@ const Earth: React.FC<{ scrollY: number }> = ({ scrollY }) => {
   const [pathProgress, setPathProgress] = useState(0);
   const [earthRotation, setEarthRotation] = useState(initialRotation);
   const [lightIntensity, setLightIntensity] = useState(0);
+  const [EarthRadius, setEarthRadius] = useState(1);
 
   // Load textures
   const earthTexture = useTexture('/earth-texture.jpg');
@@ -38,6 +39,22 @@ const Earth: React.FC<{ scrollY: number }> = ({ scrollY }) => {
     
     return () => clearInterval(interval);
   }, []);
+
+  useEffect(() => {
+    const updateSize = () => {
+      if (window.innerWidth < 768) {
+        setEarthRadius(0.8); // Smaller on mobile
+      } else {
+        setEarthRadius(1); // Default size on larger screens
+      }
+    };
+
+    updateSize(); // Call on mount
+    window.addEventListener("resize", updateSize); // Listen for window resize
+
+    return () => window.removeEventListener("resize", updateSize); // Cleanup
+  }, []);
+
 
   useEffect(() => {
     if (!earthGroupRef.current) return;
@@ -59,32 +76,32 @@ const Earth: React.FC<{ scrollY: number }> = ({ scrollY }) => {
       earthGroupRef.current.rotation.y = earthRotation;
     }
 
-    if (planeRef.current && curveRef.current) {
+    if (planeRef.current) {
       try {
-        // Move the plane along the path based on scroll progress
-        const curve = new THREE.CatmullRomCurve3(
-          curveRef.current.geometry.getAttribute('position').array as unknown as THREE.Vector3[]
-        );
-        const position = curve.getPoint(pathProgress);
-        console.log(position)
+        // Get the pre-calculated curve
+        const { curve } = flightPathData.current;
         
-      //   if (position) {
-      //     planeRef.current.position.set(position.x, position.y, position.z);
-          
-      //     // Orient the plane in the direction of travel
-      //     if (pathProgress < 0.99) {
-      //       const tangent = curve.getTangent(Math.min(pathProgress + 0.01, 0.99));
-      //       const lookAt = new THREE.Vector3().addVectors(position, tangent);
-            
-      //       // Get the direction vector from position to lookAt
-      //       const direction = new THREE.Vector3().subVectors(lookAt, position).normalize();
-            
-      //       // Calculate rotation for the plane to face the direction of travel
-      //       const angle = Math.atan2(direction.x, direction.z);
-      //       planeRef.current.rotation.y = angle;
-      //       planeRef.current.rotation.x = Math.asin(-direction.y);
-      //     }
-      //   }
+        // Get position on the curve based on scroll progress
+        const point = curve.getPointAt(pathProgress);
+        
+        // Position the plane at that point
+        planeRef.current.position.copy(point);
+        
+        // Offset the plane a little bit outward from the curve
+        const normalizedPosition = point.clone().normalize();
+        planeRef.current.position.add(normalizedPosition.multiplyScalar(0.05));
+        
+        // Set rotation to look along the path
+        if (pathProgress < 0.99) {
+          // Get a point slightly ahead to orient the plane
+
+          const normalizedPos = planeRef.current.position.clone().normalize();
+          planeRef.current.position.add(normalizedPos.multiplyScalar(0.01));
+        }
+        
+        // Make the plane larger so it's more visible
+        const scale = window.innerWidth < 768 ? 0.7 : 1;
+        planeRef.current.scale.set(scale, scale, scale);
       } catch (err) {
         console.error('Error updating flight path:', err);
       }
@@ -105,22 +122,24 @@ const Earth: React.FC<{ scrollY: number }> = ({ scrollY }) => {
 
   // Create the flight path with more control points for a smoother curve
   const createFlightPath = () => {
-    const radius = 1;
+    // We add a bit of elevation to the path so it's above the Earth's surface
+    const radius = EarthRadius * 1.05;
     const start = latLongToVector3(startCoordinates[0], startCoordinates[1], radius);
     const end = latLongToVector3(endCoordinates[0], endCoordinates[1], radius);
     
     // Calculate intermediate points for a more natural arc
-    // Create a higher arc to make it more visible
+    // Create a much higher arc to make it more visible
     const midPoint = new THREE.Vector3().addVectors(start, end).multiplyScalar(0.5);
-    midPoint.normalize().multiplyScalar(radius * 1.5); // Higher arc (1.5 times radius)
+    midPoint.normalize().multiplyScalar(radius * 1.8); // Higher arc (1.8 times radius)
     
     // Create additional control points for a smoother curve
     const quarterPoint = new THREE.Vector3().addVectors(start, midPoint).multiplyScalar(0.5);
-    quarterPoint.normalize().multiplyScalar(radius * 1.3);
+    quarterPoint.normalize().multiplyScalar(radius * 1.5);
     
     const threeQuarterPoint = new THREE.Vector3().addVectors(midPoint, end).multiplyScalar(0.5);
-    threeQuarterPoint.normalize().multiplyScalar(radius * 1.3);
+    threeQuarterPoint.normalize().multiplyScalar(radius * 1.5);
     
+    // Add more control points for an even smoother curve
     const curve = new THREE.CatmullRomCurve3([
       start,
       quarterPoint,
@@ -129,13 +148,21 @@ const Earth: React.FC<{ scrollY: number }> = ({ scrollY }) => {
       end
     ]);
     
-    const points = curve.getPoints(100); // More points for smoother curve
+    const points = curve.getPoints(200); // More points for smoother curve
     const geometry = new THREE.BufferGeometry().setFromPoints(points);
+    // Important: This is needed for the dashed line to work properly
+    geometry.computeBoundingSphere();
     
-    return { geometry, curve };
+    return { geometry, curve, points };
   };
 
-  const { geometry: pathGeometry } = createFlightPath();
+  // Store the flight path data for reference
+  const flightPathData = useRef(createFlightPath());
+  
+  // Update the flight path when the Earth radius changes
+  useEffect(() => {
+    flightPathData.current = createFlightPath();
+  }, [EarthRadius]);
 
   // Mark the beginning and end points
   const startMarker = latLongToVector3(startCoordinates[0], startCoordinates[1], 1.03); // Slightly above surface
@@ -147,22 +174,28 @@ const Earth: React.FC<{ scrollY: number }> = ({ scrollY }) => {
       <group ref={earthGroupRef}>
         {/* Earth sphere */}
         <mesh>
-          <sphereGeometry args={[1, 64, 64]} />
+          <sphereGeometry args={[EarthRadius, 64, 64]} />
           <meshStandardMaterial map={earthTexture} />
         </mesh>
         
         {/* Flight path - using dashed line for more visual interest */}
         <primitive 
           object={new THREE.Line(
-            pathGeometry,
+            flightPathData.current.geometry,
             new THREE.LineDashedMaterial({ 
               color: 'red', 
-              dashSize: 0.05, 
-              gapSize: 0.05,
-              linewidth: 5
+              dashSize: 0.1, 
+              gapSize: 0.03,
+              linewidth: 5,
+              transparent: true,
+              opacity: 1
             })
           )} 
           ref={curveRef} 
+          onUpdate={(self:any) => {
+            // Important: We need to call this to make the dashed line work
+            self.computeLineDistances();
+          }}
         />
         
         {/* Canada marker - glowing point */}
@@ -250,33 +283,27 @@ const Earth: React.FC<{ scrollY: number }> = ({ scrollY }) => {
             </Html>
           </Billboard>
         </group>
-      </group>
-      
-      {/* Airplane using sprite/billboard with your provided image - outside the rotating group */}
-      <group ref={planeRef} scale={0.8}>
-        <Billboard
-          follow={true}
-          lockX={false}
-          lockY={false}
-          lockZ={false}
-        >
-          <mesh>
-            <planeGeometry args={[1, 0.5]} />
-            <meshBasicMaterial 
-              map={planeTexture} 
-              transparent={true} 
-              side={THREE.DoubleSide} 
-            />
-          </mesh>
-          
-          {/* Small light for visibility */}
-          <pointLight 
-            position={[0, 0, 0]} 
-            intensity={0.5} 
-            color="white" 
-            distance={0.5} 
-          />
-        </Billboard>
+        
+        {/* Airplane using sprite/billboard with your provided image - inside the rotating group */}
+        <group ref={planeRef}>
+          <Billboard
+            follow={true}
+            lockX={false}
+            lockY={false}
+            lockZ={false}
+          >
+            {/* Larger plane mesh for better visibility */}
+            <mesh>
+              <planeGeometry args={[0.4, 0.2]} />
+              <meshBasicMaterial 
+                map={planeTexture} 
+                transparent={true} 
+                side={THREE.DoubleSide}
+                color="white" // Make it brighter
+              />
+            </mesh>
+          </Billboard>
+        </group>
       </group>
     </group>
   );

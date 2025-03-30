@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import styled from 'styled-components';
 import axios from 'axios';
 import { motion } from 'framer-motion';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
 
 const FormContainer = styled.div`
   max-width: 600px;
@@ -121,6 +123,8 @@ const PhotoUploadForm: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [startDate, setStartDate] = useState(new Date());
+  const [message, setMessage] = useState<string>('')
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
@@ -139,7 +143,7 @@ const PhotoUploadForm: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!name.trim() || !image) {
+    if (!name.trim() || !image || !name || !startDate) {
       setError('Please provide your name and upload an image');
       return;
     }
@@ -152,8 +156,10 @@ const PhotoUploadForm: React.FC = () => {
       formData.append('name', name);
       formData.append('description', description);
       formData.append('image', image);
+      formData.append('date', startDate.toString());
+      formData.append('message', message);
       
-      await axios.post('https://us-social-virtual-vote.com/api/photos', formData, {
+      await axios.post(`${process.env.REACT_APP_API_ENDPOINT}/api/photos`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data'
         }
@@ -161,6 +167,8 @@ const PhotoUploadForm: React.FC = () => {
       
       setSuccess(true);
       setName('');
+      setMessage('')
+      setStartDate(new Date())
       setDescription('');
       setImage(null);
       setImagePreview(null);
@@ -177,6 +185,13 @@ const PhotoUploadForm: React.FC = () => {
     }
   };
 
+  const handleDateChange = (date:any) => {
+    setStartDate(date)
+  }
+  const handleDateSelect = () => {
+
+  }
+
   return (
     <FormContainer>
       <FormTitle>Share a Photo Memory</FormTitle>
@@ -191,6 +206,20 @@ const PhotoUploadForm: React.FC = () => {
             placeholder="Enter your name"
           />
         </FormGroup>
+
+        <FormGroup>
+          <Label htmlFor="date">Photo Date</Label>
+          <DatePicker
+  selected={startDate}
+  onChange={(date:any) => setStartDate(date)} 
+/>
+          {/* <TextArea
+            id="date"
+            value={startDate}
+            onChange={(e) => setDescription(e.target.value)}
+            placeholder="Describe this photo memory..."
+          /> */}
+        </FormGroup>
         
         <FormGroup>
           <Label htmlFor="description">Photo Description (optional)</Label>
@@ -199,6 +228,16 @@ const PhotoUploadForm: React.FC = () => {
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder="Describe this photo memory..."
+          />
+        </FormGroup>
+
+        <FormGroup>
+          <Label htmlFor="description">Message to Howard</Label>
+          <TextArea
+            id="message"
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            placeholder="Good bye Howard"
           />
         </FormGroup>
         

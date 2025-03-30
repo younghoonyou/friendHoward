@@ -13,14 +13,19 @@ const EarthScene: React.FC<EarthSceneProps> = ({ scrollY }) => {
   
   // Adjust camera position based on scroll position for a more dynamic view
   useEffect(() => {
+    const targetElement = document.getElementsByClassName('photos');
+
     const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+    // console.log(document.documentElement.scrollHeight - window.innerHeight, document.documentElement.scrollHeight - )
+    // const maxScroll = document.documentElement.scrollHeight - targetElement.clientHeight;
     const progress = Math.min(Math.max(scrollY / maxScroll, 0), 1);
+    // const progress = 
     
     // Start with side view and move to top view as user scrolls
     // 49.2827, -123.1207
-    const initialX = 0;
+    const initialX = 0.5;
     const finalX = -1.5;
-    const initialY = 0;
+    const initialY = 2;
     const finalY = 2;
     const initialZ = 3;
     const finalZ = 2.5;
