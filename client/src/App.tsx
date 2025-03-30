@@ -19,7 +19,7 @@ const MainContent = styled.main`
 
 function App() {
   return (
-    <Router>
+    <Router basename={process.env.PUBLIC_URL}>
       <AppContainer>
         <Header />
         <MainContent>
